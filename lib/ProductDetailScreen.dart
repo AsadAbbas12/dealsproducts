@@ -69,6 +69,7 @@ class _PhoneNumberTextFieldState extends State<PhoneNumberTextField> {
           phoneNumber = value;
         });
       },
+
       decoration: InputDecoration(
         labelText: 'Phone Number *',
         hintText: 'Enter your phone number',
