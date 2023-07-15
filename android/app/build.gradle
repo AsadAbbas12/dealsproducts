@@ -60,6 +60,15 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+
+    sourceSets {
+        main {
+            assets {
+                // Add the following line to configure the MIME type for JavaScript files
+                exclude("**/*.js")
+            }
+        }
+    }
 }
 
 flutter {

@@ -18,6 +18,12 @@ import 'list/ProductList.dart';
 String baseUrl =
     "https://www.projects.xiico.net/asad-abbas/flutter-pms-api/public/";
 
+String name = '';
+String selectedEmirate = 'Dubai'; // Set initial value
+String phoneNumber = '';
+String address = '';
+String notes = '';
+
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
 
@@ -33,8 +39,6 @@ class NameTextField extends StatefulWidget {
 }
 
 class _NameTextFieldState extends State<NameTextField> {
-  String name = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -59,8 +63,6 @@ class PhoneNumberTextField extends StatefulWidget {
 }
 
 class _PhoneNumberTextFieldState extends State<PhoneNumberTextField> {
-  String phoneNumber = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -89,8 +91,6 @@ class AddressTextField extends StatefulWidget {
 }
 
 class _AddressTextFieldState extends State<AddressTextField> {
-  String address = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -116,8 +116,6 @@ class NotesTextField extends StatefulWidget {
 }
 
 class _NotesTextFieldState extends State<NotesTextField> {
-  String notes = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -141,12 +139,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   bool _isPlacingOrder = false;
   final CarouselController _carouselController = CarouselController();
-
-  String name = '';
-  String selectedEmirate = 'Dubai'; // Set initial value
-  String phoneNumber = '';
-  String address = '';
-  String notes = '';
 
   @override
   Widget build(BuildContext context) {
@@ -639,8 +631,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _launchWhatsApp() async {
-    String message =
-        'Hello, I am interested in your products. Please send me more information.';
+    String message = 'Hi, I am interested in your products , Name :' +
+        widget.product.title +
+        " Price : " +
+        widget.product.price.toString();
     String url = 'https://wa.me/+971523801390?text=${Uri.encodeFull(message)}';
     if (await canLaunch(url)) {
       await launch(url);
@@ -715,7 +709,7 @@ void _placeOrder(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: Text('Your Order Details'),
           content: Text('Please fill in required(*) fields.'),
           actions: [
             ElevatedButton(
@@ -733,6 +727,11 @@ void _placeOrder(
 
   String url =
       'https://projects.xiico.net/asad-abbas/flutter-pms-api/public/api/create_order';
+
+  String apiKey =
+      'ZWRWOfQNMIEZP8dEPuNE3oV7VTFYgfA3lSisVICo3h61m0ePZMdzD1bmmQbp';
+
+  Map<String, String> headers = {'API-Key': apiKey};
 
   Map<String, String> params = {
     'customer_name': name,
@@ -769,7 +768,11 @@ void _placeOrder(
 
   try {
     // Send the HTTP POST request
-    var response = await http.post(Uri.parse(url), body: params);
+    var response = await http.post(
+      Uri.parse(url),
+      body: params,
+      headers: headers,
+    );
 
     Navigator.of(context, rootNavigator: true).pop();
 

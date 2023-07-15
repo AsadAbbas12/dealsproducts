@@ -40,6 +40,8 @@ dependencies:
   carousel_slider: ^4.0.0-nullsafety.0
   shimmer: ^3.0.0
   fluttertoast: ^8.0.7
+  build_web_compilers: ^4.0.0
+  build_runner: ^2.4.0
 
 
 

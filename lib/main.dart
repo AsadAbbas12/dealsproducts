@@ -30,7 +30,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   void _launchWhatsApp() async {
     String message =
-        'Hello, I am interested in your products. Please send me more information.';
+        'Hello, I am interested in your product. Please send me more information.';
     String url = 'https://wa.me/+971523801390?text=${Uri.encodeFull(message)}';
     if (await canLaunch(url)) {
       await launch(url);
