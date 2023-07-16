@@ -13,6 +13,16 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
+
+
+  bool isImageZoomed = false;
+
+  void toggleImageZoom() {
+    setState(() {
+      isImageZoomed = !isImageZoomed;
+    });
+  }
+
   bool _isHovering = false;
   double discount = 0.0; // Random().nextInt(41) + 10;
 
@@ -62,8 +72,11 @@ class _ProductCardState extends State<ProductCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    color: Colors.black12,
-                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Add left and right padding
                     margin: EdgeInsets.only(left: 8),
                     child: Text(
                       widget.product.discountPercentage.toString() + "% Off",
@@ -75,8 +88,11 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                   ),
                   Container(
-                    color: Colors.black12,
-                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Add left and right padding
                     margin: EdgeInsets.only(right: 8),
                     child: Text(
                       widget.product.price.toString() + " AED",
@@ -89,6 +105,7 @@ class _ProductCardState extends State<ProductCard> {
                   ),
                 ],
               ),
+
               SizedBox(height: 2),
               Container(
                 margin: EdgeInsets.only(left: 8),
@@ -113,10 +130,29 @@ class _ProductCardState extends State<ProductCard> {
                 ),
               ),
               SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.yellow.withOpacity(0.3), // Example hint-like background color: yellow (with opacity)
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(13),
+                    bottomRight: Radius.circular(13),
+                  ),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Text(
+                  "Free Delivery",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
+
     );
   }
 }

@@ -18,6 +18,12 @@ import 'list/ProductList.dart';
 String baseUrl =
     "https://www.projects.xiico.net/asad-abbas/flutter-pms-api/public/";
 
+String name = '';
+String selectedEmirate = 'Dubai'; // Set initial value
+String phoneNumber = '';
+String address = '';
+String notes = '';
+
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
 
@@ -33,8 +39,6 @@ class NameTextField extends StatefulWidget {
 }
 
 class _NameTextFieldState extends State<NameTextField> {
-  String name = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -59,8 +63,6 @@ class PhoneNumberTextField extends StatefulWidget {
 }
 
 class _PhoneNumberTextFieldState extends State<PhoneNumberTextField> {
-  String phoneNumber = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -90,8 +92,6 @@ class AddressTextField extends StatefulWidget {
 }
 
 class _AddressTextFieldState extends State<AddressTextField> {
-  String address = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -117,8 +117,6 @@ class NotesTextField extends StatefulWidget {
 }
 
 class _NotesTextFieldState extends State<NotesTextField> {
-  String notes = '';
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -142,12 +140,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   bool _isPlacingOrder = false;
   final CarouselController _carouselController = CarouselController();
-
-  String name = '';
-  String selectedEmirate = 'Dubai'; // Set initial value
-  String phoneNumber = '';
-  String address = '';
-  String notes = '';
 
   @override
   Widget build(BuildContext context) {
@@ -224,59 +216,117 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: [
             Container(
               height: MediaQuery.of(context).size.height * 0.4,
-              child: CarouselSlider(
-                carouselController: _carouselController,
-                options: CarouselOptions(
-                  height: MediaQuery.of(context).size.height * 0.4,
-                  viewportFraction: 1.0,
-                  enlargeCenterPage: false,
-                  enableInfiniteScroll: false,
-                  onPageChanged: (index, reason) {
-                    // Handle the page change event
-                    // This can be used to update the current image index or perform any other actions
-                  },
-                ),
-                items: widget.product.images.map((image) {
-                  return GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pop();
+              child: Stack(
+                children: [
+                  CarouselSlider(
+                    carouselController: _carouselController,
+                    options: CarouselOptions(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      viewportFraction: 1.0,
+                      enlargeCenterPage: false,
+                      enableInfiniteScroll: false,
+                      onPageChanged: (index, reason) {
+                        // Handle the page change event
+                        // This can be used to update the current image index or perform any other actions
+                      },
+                    ),
+                    items: widget.product.images.map((image) {
+                      return GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (BuildContext context) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: InteractiveViewer(
+                                  panEnabled: false,
+                                  minScale: 0.1,
+                                  maxScale: 3.0,
+                                  child: CachedNetworkImage(
+                                    imageUrl: baseUrl + image,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              );
                             },
-                            child: InteractiveViewer(
-                              panEnabled: false,
-                              minScale: 0.1,
-                              maxScale: 3.0,
-                              child: CachedNetworkImage(
-                                imageUrl: baseUrl + image,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
                           );
                         },
+                        child: CachedNetworkImage(
+                          imageUrl: baseUrl + image,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        ),
                       );
-                    },
-                    child: CachedNetworkImage(
-                      imageUrl: baseUrl + image,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
+                    }).toList(),
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.pink,
+                        // Example attractive background color: pink
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        "Free Delivery",
+                        style: TextStyle(
                           color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
+
             ),
             SizedBox(height: 16.0),
+            Container(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.product.images.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      _carouselController.animateToPage(index);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CachedNetworkImage(
+                        imageUrl: baseUrl + widget.product.images[index],
+                        fit: BoxFit.cover,
+                        width: 60,
+                        height: 60,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -305,14 +355,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       if (widget.product.discountPercentage >
                           0.0) // Display discount only if it's greater than 0
-                        Text(
-                          "Discount: " +
-                              widget.product.discountPercentage.toString() +
-                              "%",
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            // Example attractive background color: yellowAccent
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.redAccent.withOpacity(0.3),
+                                // Example shiny effect color: yellowAccent with opacity
+                                spreadRadius: 3,
+                                blurRadius: 7,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            "Discount: ${widget.product.discountPercentage}%",
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                     ],
@@ -366,7 +432,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 32.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: NameTextField(),
@@ -640,8 +706,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _launchWhatsApp() async {
-    String message =
-        'Hello, I am interested in your products. Please send me more information.';
+    String message = 'Hi, I am interested in your products , Name :' +
+        widget.product.title +
+        " Price : " +
+        widget.product.price.toString();
     String url = 'https://wa.me/+971523801390?text=${Uri.encodeFull(message)}';
     if (await canLaunch(url)) {
       await launch(url);
@@ -716,7 +784,7 @@ void _placeOrder(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: Text('Your Order Details'),
           content: Text('Please fill in required(*) fields.'),
           actions: [
             ElevatedButton(
@@ -732,8 +800,65 @@ void _placeOrder(
     return;
   }
 
+  bool confirmed = await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Confirm Order'),
+        content: Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(
+                text:
+                    'Are you sure you want to place the order on this number:\n',
+              ),
+              TextSpan(
+                text: phoneNumber,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const TextSpan(
+                text: '?',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // Return false when canceled
+            },
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // Return false when canceled
+            },
+            child: Text('Change Number'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(true); // Return true when confirmed
+            },
+            child: Text('Confirm'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
   String url =
       'https://projects.xiico.net/asad-abbas/flutter-pms-api/public/api/create_order';
+
+  String apiKey =
+      'ZWRWOfQNMIEZP8dEPuNE3oV7VTFYgfA3lSisVICo3h61m0ePZMdzD1bmmQbp';
+
+  Map<String, String> headers = {'API-Key': apiKey};
 
   Map<String, String> params = {
     'customer_name': name,
@@ -770,7 +895,11 @@ void _placeOrder(
 
   try {
     // Send the HTTP POST request
-    var response = await http.post(Uri.parse(url), body: params);
+    var response = await http.post(
+      Uri.parse(url),
+      body: params,
+      headers: headers,
+    );
 
     Navigator.of(context, rootNavigator: true).pop();
 
