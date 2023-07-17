@@ -135,9 +135,19 @@ class _NotesTextFieldState extends State<NotesTextField> {
     );
   }
 }
+
 int _currentIndex = 0; // Initialize _currentIndex variable
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  void _launchWhatsAppCatalogue() async {
+    String url = 'https://wa.me/c/971523801390';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   int _quantity = 1;
   bool _isPlacingOrder = false;
   final CarouselController _carouselController = CarouselController();
@@ -210,6 +220,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           ),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add_business_sharp),
+            color: Colors.white,
+            onPressed: () {
+              _launchWhatsAppCatalogue();
+              //showToast();
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -228,32 +248,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       enableInfiniteScroll: false,
                       onPageChanged: (index, reason) {
                         setState(() {
-                          _currentIndex = index; // Update _currentIndex on page change
+                          _currentIndex =
+                              index; // Update _currentIndex on page change
                         });
                       },
                     ),
                     items: widget.product.images.map((image) {
                       return GestureDetector(
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: true,
-                            builder: (BuildContext context) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: InteractiveViewer(
-                                  panEnabled: false,
-                                  minScale: 0.1,
-                                  maxScale: 3.0,
-                                  child: CachedNetworkImage(
-                                    imageUrl: baseUrl + image,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              );
-                            },
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AlertDialogFullScreen(
+                                carouselController: _carouselController,
+                                images: widget.product.images,
+                                baseUrl: baseUrl,
+                                initialIndex: _currentIndex,
+                              ),
+                            ),
                           );
                         },
                         child: CachedNetworkImage(
@@ -266,7 +277,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
                         ),
                       );
                     }).toList(),
@@ -275,7 +287,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     bottom: 10,
                     left: 10,
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.pink,
                         borderRadius: BorderRadius.circular(20),
@@ -305,7 +318,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        _currentIndex = index; // Update _currentIndex on image selection
+                        _currentIndex =
+                            index; // Update _currentIndex on image selection
                       });
                       _carouselController.animateToPage(index);
                     },
@@ -337,7 +351,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 },
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -1045,4 +1058,132 @@ void _placeOrder(
     print('Error: $error');
     Navigator.of(context, rootNavigator: true).pop();
   }
+}
+
+class AlertDialogFullScreen extends StatefulWidget {
+  final CarouselController carouselController;
+  final List<String> images;
+  final String baseUrl;
+  final int initialIndex;
+
+  AlertDialogFullScreen({
+    required this.carouselController,
+    required this.images,
+    required this.baseUrl,
+    required this.initialIndex,
+  });
+
+  @override
+  _AlertDialogFullScreenState createState() => _AlertDialogFullScreenState();
+}
+
+class _AlertDialogFullScreenState extends State<AlertDialogFullScreen> {
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
+
+  void goToPreviousImage() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    } else {
+      Navigator.of(context)
+          .pop(); // Dismiss the dialog if no more images on the left
+    }
+  }
+
+  void goToNextImage() {
+    if (_currentIndex < widget.images.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool showRightArrow = _currentIndex < widget.images.length - 1;
+
+    return Dialog(
+      insetPadding: EdgeInsets.zero,
+      child: Stack(
+        children: [
+          InteractiveViewer(
+            panEnabled: false,
+            minScale: 0.1,
+            maxScale: 3.0,
+            child: CachedNetworkImage(
+              imageUrl: widget.baseUrl + widget.images[_currentIndex],
+              fit: BoxFit.contain,
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.arrow_back),
+                color: Colors.white,
+                onPressed: () {
+                  goToPreviousImage();
+                },
+              ),
+            ),
+          ),
+          if (showRightArrow)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              right: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.arrow_forward),
+                  color: Colors.white,
+                  onPressed: () {
+                    goToNextImage();
+                  },
+                ),
+              ),
+            ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 80,
+            child: Align(
+              alignment: Alignment.center,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop(); // Dismiss the dialog
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

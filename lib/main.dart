@@ -41,6 +41,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: Stack(
         children: [
@@ -50,14 +51,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 child: Center(
                   child: FutureBuilder<List<Product>>(
                     future: _futureProducts,
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<Product>> snapshot) {
+                    builder: (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
                       if (snapshot.hasData) {
                         return ProductList(products: snapshot.data!);
                       } else if (snapshot.hasError) {
                         return Text('${snapshot.error}');
                       } else {
-                        return const CircularProgressIndicator();
+                        return CircularProgressIndicator();
                       }
                     },
                   ),
@@ -296,3 +296,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+
