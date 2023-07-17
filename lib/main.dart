@@ -39,7 +39,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,9 +174,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
 }
 
 class MyApp extends StatelessWidget {
-
-
-
   void _launchWhatsAppCatalogue() async {
     String url = 'https://wa.me/c/971523801390';
     if (await canLaunch(url)) {
@@ -186,7 +182,6 @@ class MyApp extends StatelessWidget {
       throw 'Could not launch $url';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -262,42 +257,15 @@ class MyApp extends StatelessWidget {
             ),
           ),
           actions: <Widget>[
-            GestureDetector(
-              onTap: () {
+            IconButton(
+              icon: Icon(Icons.add_business_sharp),
+              color: Colors.white,
+              onPressed: () {
                 _launchWhatsAppCatalogue();
                 //showToast();
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(0), // Set the border radius for rounded corners
-                  color: Colors.transparent, // Set the background color for the container
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'On Whatsapp', // Add your desired text here
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.add_business_sharp),
-                      color: Colors.green[900],
-                      onPressed: () {
-                        _launchWhatsAppCatalogue();
-                        //showToast();
-                      },
-                    ),
-                  ],
-                ),
-              ),
             ),
           ],
-
-
         ),
         body: CustomScrollView(
           slivers: [

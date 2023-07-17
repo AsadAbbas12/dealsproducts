@@ -135,6 +135,7 @@ class _NotesTextFieldState extends State<NotesTextField> {
     );
   }
 }
+int _currentIndex = 0; // Initialize _currentIndex variable
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
@@ -226,8 +227,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       enlargeCenterPage: false,
                       enableInfiniteScroll: false,
                       onPageChanged: (index, reason) {
-                        // Handle the page change event
-                        // This can be used to update the current image index or perform any other actions
+                        setState(() {
+                          _currentIndex = index; // Update _currentIndex on page change
+                        });
                       },
                     ),
                     items: widget.product.images.map((image) {
@@ -264,8 +266,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
+                          errorWidget: (context, url, error) => Icon(Icons.error),
                         ),
                       );
                     }).toList(),
@@ -274,11 +275,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     bottom: 10,
                     left: 10,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.pink,
-                        // Example attractive background color: pink
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -293,7 +292,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ],
               ),
-
             ),
             SizedBox(height: 16.0),
             Container(
@@ -302,12 +300,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 scrollDirection: Axis.horizontal,
                 itemCount: widget.product.images.length,
                 itemBuilder: (context, index) {
+                  bool isSelected = (index == _currentIndex);
+
                   return GestureDetector(
                     onTap: () {
+                      setState(() {
+                        _currentIndex = index; // Update _currentIndex on image selection
+                      });
                       _carouselController.animateToPage(index);
                     },
                     child: Container(
                       margin: EdgeInsets.symmetric(horizontal: 8.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? Colors.blue : Colors.transparent,
+                          width: isSelected ? 2.0 : 0.0,
+                        ),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
                       child: CachedNetworkImage(
                         imageUrl: baseUrl + widget.product.images[index],
                         fit: BoxFit.cover,
@@ -327,6 +337,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 },
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -353,6 +364,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           color: Colors.blue,
                         ),
                       ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                              ),
+                            ),
+                            TextSpan(
+                              text: (widget.product.price +
+                                          (widget.product.price *
+                                              (widget.product
+                                                      .discountPercentage /
+                                                  100)))
+                                      .toStringAsFixed(2) +
+                                  " AED",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 8),
                       if (widget.product.discountPercentage >
                           0.0) // Display discount only if it's greater than 0
                         Container(
