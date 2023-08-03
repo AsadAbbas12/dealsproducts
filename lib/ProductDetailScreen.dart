@@ -1,8 +1,7 @@
-import 'dart:async';
 import 'dart:convert'; // Add this import statement at the top
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dealsproducts/list/model/ProductModelDetail.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'list/model/ProductModel.dart';
 
-import 'Product.dart';
-import 'list/ProductList.dart';
-// import 'dart:js' as js;
-
-String baseUrl =
-    "https://www.projects.xiico.net/asad-abbas/flutter-pms-api/public/";
+String baseUrl = "https://uaedeals4u.ae/admin/api/public/";
 
 String name = '';
 String selectedEmirate = 'Dubai'; // Set initial value
@@ -25,7 +20,7 @@ String address = '';
 String notes = '';
 
 class ProductDetailScreen extends StatefulWidget {
-  final Product product;
+  late final ProductModelDetail? product;
 
   ProductDetailScreen({required this.product});
 
@@ -47,7 +42,7 @@ class _NameTextFieldState extends State<NameTextField> {
           name = value;
         });
       },
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Name *',
         hintText: 'Enter your name',
         border: OutlineInputBorder(),
@@ -72,7 +67,7 @@ class _PhoneNumberTextFieldState extends State<PhoneNumberTextField> {
         });
       },
 
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Phone Number *',
         hintText: 'Enter your phone number',
         border: OutlineInputBorder(),
@@ -100,7 +95,7 @@ class _AddressTextFieldState extends State<AddressTextField> {
           address = value;
         });
       },
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Address *',
         hintText: 'Enter your Address',
         border: OutlineInputBorder(),
@@ -125,7 +120,7 @@ class _NotesTextFieldState extends State<NotesTextField> {
           notes = value;
         });
       },
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Notes',
         hintText: 'Write instructions or your choice for us (Optional)',
         border: OutlineInputBorder(),
@@ -139,6 +134,12 @@ class _NotesTextFieldState extends State<NotesTextField> {
 int _currentIndex = 0; // Initialize _currentIndex variable
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int _quantity = 1;
+  bool _isPlacingOrder = false;
+  final CarouselController _carouselController = CarouselController();
+
+  ProductModelDetail? productModel = null;
+
   void _launchWhatsAppCatalogue() async {
     String url = 'https://wa.me/c/971523801390';
     if (await canLaunch(url)) {
@@ -148,15 +149,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  int _quantity = 1;
-  bool _isPlacingOrder = false;
-  final CarouselController _carouselController = CarouselController();
-
   @override
   Widget build(BuildContext context) {
-    // // Call the Facebook Pixel code when the detail page is built
-    //  js.context.callMethod('fbq', ['track', 'ViewContent']);
-
     return Scaffold(
       appBar: AppBar(
         leading: Container(),
@@ -164,20 +158,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         // Adjust the value as needed// Remove the back button
         title: GestureDetector(
           onTap: () async {
-            if (kIsWeb) {
-              const url = 'https://www.deals4u.ae';
-              if (await canLaunch(url)) {
-                await launch(url);
-              } else {
-                throw 'Could not launch $url';
-              }
-            } else {
-              Navigator.pop(context);
-            }
+            // if (kIsWeb) {
+            //   const url = 'https://www.uaedeals4u.ae';
+            //   if (await canLaunch(url)) {
+            //     await launch(url);
+            //   } else {
+            //     throw 'Could not launch $url';
+            //   }
+            // } else {
+            Navigator.pop(context);
+            //  }
           },
           child: Container(
-            margin: EdgeInsets.only(bottom: 16.0, top: 16.0),
-            child: Column(
+            margin: const EdgeInsets.only(bottom: 16.0, top: 16.0),
+            child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               // Align text to the left
@@ -187,7 +181,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.shopping_cart_rounded,
+                        Icons.arrow_back,
                         size: 24.0,
                         color: Colors.white,
                       ),
@@ -222,7 +216,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.add_business_sharp),
+            icon: const Icon(Icons.add_business_sharp),
             color: Colors.white,
             onPressed: () {
               _launchWhatsAppCatalogue();
@@ -253,14 +247,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         });
                       },
                     ),
-                    items: widget.product.images.map((image) {
+                    items: widget.product?.images.map((image) {
                       return GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => AlertDialogFullScreen(
                                 carouselController: _carouselController,
-                                images: widget.product.images,
+                                images: widget.product!.images,
                                 baseUrl: baseUrl,
                                 initialIndex: _currentIndex,
                               ),
@@ -278,7 +272,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                           errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
+                              const Icon(Icons.error),
                         ),
                       );
                     }).toList(),
@@ -287,13 +281,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     bottom: 10,
                     left: 10,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.pink,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
+                      child: const Text(
                         "Free Delivery",
                         style: TextStyle(
                           color: Colors.white,
@@ -306,12 +300,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Container(
               height: 80,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: widget.product.images.length,
+                itemCount: widget.product!.images.length,
                 itemBuilder: (context, index) {
                   bool isSelected = (index == _currentIndex);
 
@@ -324,7 +318,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       _carouselController.animateToPage(index);
                     },
                     child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 8.0),
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: isSelected ? Colors.blue : Colors.transparent,
@@ -333,7 +327,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         borderRadius: BorderRadius.circular(5.0),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: baseUrl + widget.product.images[index],
+                        imageUrl: baseUrl + widget.product!.images[index],
                         fit: BoxFit.cover,
                         width: 60,
                         height: 60,
@@ -344,7 +338,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
                       ),
                     ),
                   );
@@ -358,8 +353,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.product.title,
-                      style: TextStyle(
+                      widget.product!.productTitle,
+                      style: const TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
@@ -370,8 +365,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        widget.product.price.toString() + " AED",
-                        style: TextStyle(
+                        widget.product!.price.toString() + " AED",
+                        style: const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
@@ -380,21 +375,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       RichText(
                         text: TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 12,
                               ),
                             ),
                             TextSpan(
-                              text: (widget.product.price +
-                                          (widget.product.price *
-                                              (widget.product
+                              text: (widget.product!.price +
+                                          (widget.product!.price *
+                                              (widget.product!
                                                       .discountPercentage /
                                                   100)))
                                       .toStringAsFixed(2) +
                                   " AED",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 12,
                                 decoration: TextDecoration.lineThrough,
@@ -403,12 +398,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 8),
-                      if (widget.product.discountPercentage >
+                      const SizedBox(height: 8),
+                      if (widget.product!.discountPercentage >
                           0.0) // Display discount only if it's greater than 0
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Colors.redAccent,
                             // Example attractive background color: yellowAccent
@@ -419,13 +414,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 // Example shiny effect color: yellowAccent with opacity
                                 spreadRadius: 3,
                                 blurRadius: 7,
-                                offset: Offset(0, 3),
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
                           child: Text(
-                            "Discount: ${widget.product.discountPercentage}%",
-                            style: TextStyle(
+                            "Discount: ${widget.product!.discountPercentage}%",
+                            style: const TextStyle(
                               fontSize: 14.0,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -437,7 +432,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 0.0),
+            const SizedBox(height: 0.0),
             GestureDetector(
               onTap: () {
                 showDialog(
@@ -445,7 +440,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   barrierDismissible: true,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text(
+                      title: const Text(
                         'Product Description',
                         style: TextStyle(
                           fontSize: 18.0,
@@ -454,8 +449,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       content: SingleChildScrollView(
                         child: Text(
-                          widget.product.description.toString(),
-                          style: TextStyle(
+                          widget.product!.description.toString(),
+                          style: const TextStyle(
                             fontSize: 16.0,
                           ),
                         ),
@@ -465,7 +460,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          child: Text('Close'),
+                          child: const Text('Close'),
                         ),
                       ],
                     );
@@ -475,179 +470,313 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  widget.product.description.toString(),
-                  style: TextStyle(
+                  widget.product!.description.toString(),
+                  style: const TextStyle(
                     fontSize: 16.0,
                     color: Colors.black,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 32.0),
+            const SizedBox(height: 32.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: NameTextField(),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: DropdownButtonFormField<String>(
-                value: selectedEmirate,
-                onChanged: (value) {
-                  setState(() {
-                    selectedEmirate = value!;
-                  });
+              child: TextFormField(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16.0),
+                            topRight: Radius.circular(16.0),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: Text(
+                                'Abu Dhabi',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Abu Dhabi';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Divider(),
+                            ListTile(
+                              title: Text(
+                                'Dubai',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Dubai';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Divider(),
+                            ListTile(
+                              title: Text(
+                                'Sharjah',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Sharjah';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Divider(),
+                            ListTile(
+                              title: Text(
+                                'Ajman',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Ajman';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Divider(),
+                            ListTile(
+                              title: Text(
+                                'Fujairah',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Fujairah';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                            Divider(),
+                            ListTile(
+                              title: Text(
+                                'Umm Al-Quwain',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedEmirate = 'Umm Al-Quwain';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
                 },
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Region',
                   hintText: 'Select your region',
                   border: OutlineInputBorder(),
                   floatingLabelBehavior: FloatingLabelBehavior.always,
                 ),
-                items: [
-                  DropdownMenuItem<String>(
-                    value: 'Abu Dhabi',
-                    child: Text('Abu Dhabi'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'Dubai',
-                    child: Text('Dubai'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'Sharjah',
-                    child: Text('Sharjah'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'Ajman',
-                    child: Text('Ajman'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'Fujairah',
-                    child: Text('Fujairah'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'Umm Al-Quwain',
-                    child: Text('Umm Al-Quwain'),
-                  ),
-                  // Add more Emirates' names here
-                ],
+                readOnly: true,
+                controller: TextEditingController(text: selectedEmirate),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: PhoneNumberTextField(),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: AddressTextField(),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: NotesTextField(),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Quantity:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Colors.blue.withOpacity(0.2),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Quantity:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (_quantity >= 2) _quantity--;
+                                });
+                              },
+                              child: const Icon(Icons.remove),
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(16.0),
+                              ),
+                            ),
+                            const SizedBox(width: 6.0),
+                            Text(
+                              _quantity.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                              ),
+                            ),
+                            const SizedBox(width: 6.0),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _quantity++;
+                                });
+                              },
+                              child: const Icon(Icons.add),
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(16.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12.0),
+                  // Add some vertical spacing between the buttons and the total price
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Colors.transparent,
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Text(
+                          'Total Price: AED ${(_quantity * widget.product!.price).toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                if (_quantity >= 2) _quantity--;
-                              });
-                            },
-                            child: Icon(Icons.remove),
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(16.0),
-                            ),
-                          ),
-                          SizedBox(width: 6.0),
-                          Text(
-                            _quantity.toString(),
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20.0,
-                            ),
-                          ),
-                          SizedBox(width: 6.0),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _quantity++;
-                              });
-                            },
-                            child: Icon(Icons.add),
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(16.0),
-                            ),
-                          ),
-                        ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 12.0),
-                  // Add some vertical spacing between the buttons and the total price
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Total Price: AED ${_quantity * widget.product.price}',
-                      // Replace 'widget.product.price' with your actual price calculation logic
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
-                        color: Colors.blue,
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _isPlacingOrder = true;
+                        });
+                        _placeOrder(
+                          name.toString(),
+                          selectedEmirate.toString(),
+                          phoneNumber.toString(),
+                          address.toString(),
+                          widget.product!.productTitle.toString(),
+                          widget.product!.price.toString(),
+                          _quantity.toString(),
+                          "Deals4U -> " + notes,
+                          context,
+                          _isPlacingOrder,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.transparent,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.0, vertical: 10.0),
+                      ),
+                      child: Text(
+                        'Place Order',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 16.0),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _isPlacingOrder = true;
-                      });
-                      _placeOrder(
-                        name.toString(),
-                        selectedEmirate.toString(),
-                        phoneNumber.toString(),
-                        address.toString(),
-                        widget.product.title.toString(),
-                        widget.product.price.toString(),
-                        _quantity.toString(),
-                        "Deals4U -> " + notes,
-                        context,
-                        _isPlacingOrder,
-                      );
-                    },
-                    child: Text('Place Order'),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
@@ -666,11 +795,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   RichText(
                     text: TextSpan(
                       children: [
-                        TextSpan(
+                        const TextSpan(
                           text: '© 2023 ',
                           style: TextStyle(
                             fontSize: 10,
@@ -680,7 +809,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         TextSpan(
                           text: 'Deals 4U Emirates',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
                             color: Colors.white,
                             fontFamily: 'Pacifico',
@@ -688,7 +817,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () async {
-                              const url = 'https://www.deals4u.ae';
+                              const url = 'https://www.uaedeals4u.ae';
                               if (await canLaunch(url)) {
                                 await launch(url);
                               } else {
@@ -696,7 +825,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               }
                             },
                         ),
-                        TextSpan(
+                        const TextSpan(
                           text: '. All Rights Reserved.',
                           style: TextStyle(
                             fontSize: 10,
@@ -707,7 +836,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   GestureDetector(
                     onTap: () {
                       // Navigate to the Play Store
@@ -721,7 +850,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   GestureDetector(
                     onTap: () {
                       // Navigate to the App Store
@@ -735,8 +864,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Icon(Icons.lock, size: 18, color: Colors.white),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.lock, size: 18, color: Colors.white),
                 ],
               )),
         ),
@@ -758,59 +887,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void _launchWhatsApp() async {
     String message = 'Hi, I am interested in your products , Name :' +
-        widget.product.title +
+        widget.product!.productTitle +
         " Price : " +
-        widget.product.price.toString();
+        widget.product!.price.toString();
     String url = 'https://wa.me/+971523801390?text=${Uri.encodeFull(message)}';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
-  }
-}
-
-class GridView extends StatefulWidget {
-  @override
-  _ProductListScreenStateDetail createState() =>
-      _ProductListScreenStateDetail();
-}
-
-class _ProductListScreenStateDetail extends State<GridView> {
-  late Future<List<Product>> _futureProducts;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureProducts = ProductService.getProducts();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blueGrey[100],
-      ),
-      child: Stack(
-        children: [
-          Center(
-            child: FutureBuilder<List<Product>>(
-              future: _futureProducts,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<Product>> snapshot) {
-                if (snapshot.hasData) {
-                  return ProductList(products: snapshot.data!!);
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                } else {
-                  return CircularProgressIndicator();
-                }
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -835,14 +920,14 @@ void _placeOrder(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Your Order Details'),
-          content: Text('Please fill in required(*) fields.'),
+          title: const Text('Your Order Details'),
+          content: const Text('Please fill in required(*) fields.'),
           actions: [
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -855,7 +940,7 @@ void _placeOrder(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Confirm Order'),
+        title: const Text('Confirm Order'),
         content: Text.rich(
           TextSpan(
             children: [
@@ -880,19 +965,19 @@ void _placeOrder(
             onPressed: () {
               Navigator.of(context).pop(false); // Return false when canceled
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(false); // Return false when canceled
             },
-            child: Text('Change Number'),
+            child: const Text('Change Number'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(true); // Return true when confirmed
             },
-            child: Text('Confirm'),
+            child: const Text('Confirm'),
           ),
         ],
       );
@@ -904,10 +989,11 @@ void _placeOrder(
   }
 
   String url =
-      'https://projects.xiico.net/asad-abbas/flutter-pms-api/public/api/create_order';
+      'https://uaedeals4u.ae/admin/api/public/api/create_order';
 
   String apiKey =
       'ZWRWOfQNMIEZP8dEPuNE3oV7VTFYgfA3lSisVICo3h61m0ePZMdzD1bmmQbp';
+
 
   Map<String, String> headers = {'API-Key': apiKey};
 
@@ -927,9 +1013,9 @@ void _placeOrder(
     builder: (BuildContext context) {
       return WillPopScope(
         onWillPop: () async => false,
-        child: Dialog(
+        child: const Dialog(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -972,20 +1058,21 @@ void _placeOrder(
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.check_circle,
                     color: Colors.green,
                     size: 64.0,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Text(successMessage),
                 ],
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -998,22 +1085,22 @@ void _placeOrder(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Error'),
+              title: const Text('Error'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.error,
                     color: Colors.red,
                     size: 64.0,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   Text(message),
                 ],
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -1029,8 +1116,8 @@ void _placeOrder(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error'),
-            content: Column(
+            title: const Text('Error'),
+            content: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
@@ -1044,7 +1131,7 @@ void _placeOrder(
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -1131,7 +1218,7 @@ class _AlertDialogFullScreenState extends State<AlertDialogFullScreen> {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back),
                 color: Colors.white,
                 onPressed: () {
                   goToPreviousImage();
@@ -1149,7 +1236,7 @@ class _AlertDialogFullScreenState extends State<AlertDialogFullScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.arrow_forward),
+                  icon: const Icon(Icons.arrow_forward),
                   color: Colors.white,
                   onPressed: () {
                     goToNextImage();
@@ -1173,7 +1260,7 @@ class _AlertDialogFullScreenState extends State<AlertDialogFullScreen> {
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.close,
                     color: Colors.white,
                   ),
@@ -1185,5 +1272,46 @@ class _AlertDialogFullScreenState extends State<AlertDialogFullScreen> {
       ),
     );
   }
+}
 
+class NavigateToDetailPage extends StatelessWidget {
+  final String? detailId;
+
+  NavigateToDetailPage({required this.detailId});
+
+  Future<ProductModelDetail> fetchData() async {
+    // Your code to fetch data from the API here
+    // For example:
+    String apiUrl =
+        'https://uaedeals4u.ae/admin/api/public/api/get_product/';
+
+    String url = apiUrl + int.parse(detailId!).toString();
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return ProductModelDetail.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load data from API');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ProductModelDetail>(
+      future: fetchData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // While waiting for the data, show a loading indicator
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData) {
+          // If data is available, navigate to the ProductDetailScreen
+          return ProductDetailScreen(product: snapshot.data!);
+        } else {
+          // If there's an error, show an error message
+          return Center(child: Text('Failed to load data from API'));
+        }
+      },
+    );
+  }
+
+// Other code...
 }

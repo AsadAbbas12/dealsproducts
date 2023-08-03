@@ -1,13 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../Product.dart';
+import '../ProductWidget.dart';
+import 'model/ProductModel.dart';
 import 'card/ProductCard.dart';
 
 class ProductList extends StatelessWidget {
-  final List<Product> products;
+  final List<ProductModel> products;
 
-  ProductList({required this.products});
+  const ProductList({super.key, required this.products});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +27,9 @@ class ProductList extends StatelessWidget {
       columnCount = 8;
     }
 
-    EdgeInsetsGeometry paddingValue = EdgeInsets.all(10.0);
+    EdgeInsetsGeometry paddingValue = const EdgeInsets.all(10.0);
     if (screenWidth > 1200) {
-      paddingValue = EdgeInsets.fromLTRB(240.0, 20.0, 240.0, 40.0);
+      paddingValue = const EdgeInsets.fromLTRB(240.0, 20.0, 240.0, 40.0);
     }
 
     return Container(
